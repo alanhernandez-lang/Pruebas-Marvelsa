@@ -5,7 +5,7 @@ const EvaluationCriteria = () => {
         {
             id: 1,
             title: 'Impacto',
-            description: 'Evalúa el resultado real y positivo que dejó el rock.',
+            description: 'Evalúa el resultado real y positivo que dejó el Rock.',
             color: '#10b981', // Green
             icon: '1'
         },
@@ -26,7 +26,7 @@ const EvaluationCriteria = () => {
         {
             id: 4,
             title: 'Actitud',
-            description: 'Evalúa el desempeño del presentador en el escenario (Disposición y energía positiva).',
+            description: 'Evalúa el desempeño del presentador en el escenario (disposición y energía positiva).',
             color: '#ef4444', // Red
             icon: '4'
         }
