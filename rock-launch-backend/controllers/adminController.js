@@ -1,3 +1,4 @@
+// Version Debug 2.0
 const db = require('../db');
 const XLSX = require('xlsx');
 const { randomUUID } = require('crypto');
@@ -176,27 +177,58 @@ exports.updatePerson = (req, res) => {
     }
 };
 
+// Version Debug 2.0 - Detección inteligente de cabeceras
 exports.importPeople = async (req, res) => {
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
 
     try {
         const workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
         const sheetName = workbook.SheetNames[0];
-        const data = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+        const worksheet = workbook.Sheets[sheetName];
+        
+        // Obtenemos los datos como matriz (arreglo de arreglos)
+        const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
-        if (!data || data.length === 0) {
+        if (!rows || rows.length === 0) {
             return res.status(400).json({ error: 'El archivo Excel parece estar vacío.' });
         }
 
-        const isPostgres = !!process.env.DATABASE_URL;
+        // Buscar la fila de cabeceras (la primera que tenga algo parecido a "Nombre" o "Telefono")
+        let headerRowIndex = -1;
+        let columnMapping = { name: -1, phone: -1, type: -1 };
 
-        const insertQuery = (table) => {
-            if (isPostgres) {
-                return `INSERT INTO ${table} (name, phone, porcentaje, token) VALUES (?, ?, ?, ?) ON CONFLICT (phone) DO NOTHING`;
-            } else {
-                return `INSERT OR IGNORE INTO ${table} (name, phone, porcentaje, token) VALUES (?, ?, ?, ?)`;
+        const normalize = (val) => String(val || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+
+        for (let i = 0; i < Math.min(rows.length, 10); i++) {
+            const row = rows[i];
+            if (!row || row.length === 0) continue;
+
+            const nameIdx = row.findIndex(c => normalize(c).includes("nombre") || normalize(c).includes("name") || normalize(c).includes("completo"));
+            const phoneIdx = row.findIndex(c => normalize(c).includes("telefono") || normalize(c).includes("phone") || normalize(c).includes("celular") || normalize(c).includes("whatsapp"));
+            const typeIdx = row.findIndex(c => normalize(c).includes("tipo") || normalize(c).includes("type") || normalize(c).includes("rol") || normalize(c).includes("jurado"));
+
+            if (nameIdx !== -1 && phoneIdx !== -1) {
+                headerRowIndex = i;
+                columnMapping = { name: nameIdx, phone: phoneIdx, type: typeIdx };
+                break;
             }
-        };
+        }
+
+        if (headerRowIndex === -1) {
+            console.log("No se detectaron cabeceras válidas en las primeras 10 filas. Filas analizadas:", rows.slice(0, 5));
+            return res.status(400).json({ error: 'No se encontraron las columnas correctas (Nombre y Teléfono). Asegúrate de que las cabeceras estén en las primeras filas.' });
+        }
+
+        console.log(`Cabeceras detectadas en fila ${headerRowIndex + 1}:`, { 
+            nombre: rows[headerRowIndex][columnMapping.name], 
+            telefono: rows[headerRowIndex][columnMapping.phone],
+            tipo: columnMapping.type !== -1 ? rows[headerRowIndex][columnMapping.type] : 'N/A'
+        });
+
+        const isPostgres = !!process.env.DATABASE_URL;
+        const insertQuery = (table) => isPostgres 
+            ? `INSERT INTO ${table} (name, phone, porcentaje, token) VALUES (?, ?, ?, ?) ON CONFLICT (phone) DO NOTHING`
+            : `INSERT OR IGNORE INTO ${table} (name, phone, porcentaje, token) VALUES (?, ?, ?, ?)`;
 
         const jurySql = insertQuery('jurados');
         const publicSql = insertQuery('registro_personas');
@@ -204,65 +236,49 @@ exports.importPeople = async (req, res) => {
         let insertedCount = 0;
         let skippedCount = 0;
 
-        // Helper to find column values regardless of case or accents
-        const getCellValue = (row, possibleKeys) => {
-            const keys = Object.keys(row);
-            for (const k of possibleKeys) {
-                const found = keys.find(rk => {
-                    const normalizedRK = rk.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
-                    const normalizedK = k.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
-                    return normalizedRK === normalizedK;
-                });
-                if (found) return row[found];
-            }
-            return null;
-        };
+        // Procesar datos a partir de la fila siguiente a las cabeceras
+        for (let i = headerRowIndex + 1; i < rows.length; i++) {
+            const row = rows[i];
+            if (!row || row.length === 0) continue;
 
-        for (const row of data) {
-            console.log('--- Procesando Fila ---', row);
-            
-            const name = getCellValue(row, ['Nombre', 'Name', 'name']);
-            let phone = String(getCellValue(row, ['Telefono', 'Teléfono', 'Phone', 'phone', 'Celular']) || '').replace(/\D/g, '');
-            const typeStr = String(getCellValue(row, ['Tipo', 'Type', 'tipo', 'Rol']) || '').toUpperCase();
-            
-            const token = generateShortToken();
-            const isJury = typeStr === 'JURADO' || typeStr === 'JURY' || typeStr === 'J';
+            let name = String(row[columnMapping.name] || "").trim();
+            let phone = String(row[columnMapping.phone] || "").replace(/\D/g, "");
+            let typeStr = columnMapping.type !== -1 ? String(row[columnMapping.type] || "").toUpperCase() : "";
 
             if (name && phone) {
-                // Ensure phone is at least 10 chars if it was just 10 digits
-                if (phone.length === 10) phone = '52' + phone; 
+                if (phone.length === 10) phone = '52' + phone;
 
+                const isJury = typeStr.includes('JURADO') || typeStr.includes('JURY') || typeStr === 'J' || typeStr.includes('JURADA');
                 const targetSql = isJury ? jurySql : publicSql;
                 const weight = isJury ? 70 : 30;
+                const token = generateShortToken();
 
-                await new Promise((resolve, reject) => {
+                await new Promise((resolve) => {
                     db.run(targetSql, [name, phone, weight, token], function(err) {
                         if (err) {
                             console.log(`❌ ERROR BD para ${name}:`, err.message);
                             skippedCount++;
-                            resolve(); 
+                        } else if (this && this.changes > 0) {
+                            console.log(`✅ INSERTADO: ${name} (${phone})`);
+                            insertedCount++;
                         } else {
-                            if (this && this.changes > 0) {
-                                console.log(`✅ INSERTADO: ${name} (${phone})`);
-                                insertedCount++;
-                            } else {
-                                console.log(`⚠️ OMITIDO (Duplicado): ${name} (${phone})`);
-                                skippedCount++;
-                            }
-                            resolve();
+                            console.log(`⚠️ OMITIDO: ${name} (${phone})`);
+                            skippedCount++;
                         }
+                        resolve();
                     });
                 });
-            } else {
-                console.log('⚠️ OMITIDO (Datos Incompletos):', { name: name || 'FALTANTE', phone: phone || 'FALTANTE' });
+            } else if (name || phone) {
+                // Solo loguear si al menos tiene un dato pero está incompleto
+                console.log('⚠️ Fila incompleta:', { name: name || 'VACÍO', phone: phone || 'VACÍO' });
                 skippedCount++;
             }
         }
 
         res.json({ 
             message: 'Importación finalizada.',
-            details: `Insertados: ${insertedCount}, Omitidos (duplicados o incompletos): ${skippedCount}`,
-            total: data.length
+            details: `Insertados: ${insertedCount}, Omitidos: ${skippedCount}`,
+            total: rows.length - (headerRowIndex + 1)
         });
     } catch (err) {
         console.error('Import error:', err);
