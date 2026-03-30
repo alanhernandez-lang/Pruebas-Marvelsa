@@ -180,10 +180,13 @@ exports.importPeople = async (req, res) => {
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
 
     try {
-        // Read from memory buffer instead of file path to support serverless environments (Vercel)
         const workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
         const sheetName = workbook.SheetNames[0];
         const data = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+
+        if (!data || data.length === 0) {
+            return res.status(400).json({ error: 'El archivo Excel parece estar vacío.' });
+        }
 
         const isPostgres = !!process.env.DATABASE_URL;
 
@@ -198,32 +201,69 @@ exports.importPeople = async (req, res) => {
         const jurySql = insertQuery('jurados');
         const publicSql = insertQuery('registro_personas');
 
-        // Execute sequentially to avoid race conditions or DB locks
-        for (const row of data) {
-            const name = row.Nombre || row.Name || row.name;
-            const phone = String(row.Telefono || row.Teléfono || row.Phone || row.phone || '').replace(/\D/g, '');
-            const typeStr = (row.Tipo || row.Type || row.tipo || '').toUpperCase();
-            const token = generateShortToken();
+        let insertedCount = 0;
+        let skippedCount = 0;
 
+        // Helper to find column values regardless of case or accents
+        const getCellValue = (row, possibleKeys) => {
+            const keys = Object.keys(row);
+            for (const k of possibleKeys) {
+                const found = keys.find(rk => {
+                    const normalizedRK = rk.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+                    const normalizedK = k.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+                    return normalizedRK === normalizedK;
+                });
+                if (found) return row[found];
+            }
+            return null;
+        };
+
+        for (const row of data) {
+            const name = getCellValue(row, ['Nombre', 'Name', 'name']);
+            let phone = String(getCellValue(row, ['Telefono', 'Teléfono', 'Phone', 'phone', 'Celular']) || '').replace(/\D/g, '');
+            const typeStr = String(getCellValue(row, ['Tipo', 'Type', 'tipo', 'Rol']) || '').toUpperCase();
+            
+            const token = generateShortToken();
             const isJury = typeStr === 'JURADO' || typeStr === 'JURY' || typeStr === 'J';
 
             if (name && phone) {
+                // Ensure phone is at least 10 chars if it was just 10 digits
+                if (phone.length === 10) phone = '52' + phone; 
+
                 const targetSql = isJury ? jurySql : publicSql;
                 const weight = isJury ? 70 : 30;
 
                 await new Promise((resolve, reject) => {
-                    db.run(targetSql, [name, phone, weight, token], (err) => {
-                        if (err) reject(err);
-                        else resolve();
+                    // Use regular function to access 'this.changes'
+                    db.run(targetSql, [name, phone, weight, token], function(err) {
+                        if (err) {
+                            console.error('Row insert error:', err);
+                            // We don't reject here to allow other rows to continue, but we count it as skipped
+                            skippedCount++;
+                            resolve(); 
+                        } else {
+                            if (this && this.changes > 0) {
+                                insertedCount++;
+                            } else {
+                                skippedCount++;
+                            }
+                            resolve();
+                        }
                     });
                 });
+            } else {
+                skippedCount++;
             }
         }
 
-        res.json({ message: `Import completed successfully. Processed ${data.length} rows.` });
+        res.json({ 
+            message: 'Importación finalizada.',
+            details: `Insertados: ${insertedCount}, Omitidos (duplicados o incompletos): ${skippedCount}`,
+            total: data.length
+        });
     } catch (err) {
         console.error('Import error:', err);
-        res.status(500).json({ error: 'Error processing Excel file: ' + err.message });
+        res.status(500).json({ error: 'Error al procesar el archivo Excel: ' + err.message });
     }
 };
 

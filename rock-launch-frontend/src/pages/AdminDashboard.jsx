@@ -165,10 +165,10 @@ function AdminDashboard() {
         const formData = new FormData();
         formData.append('file', file);
         try {
-            await axios.post('admin/people/import', formData, {
+            const res = await axios.post('admin/people/import', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
-            alert("Importación completada");
+            alert(`${res.data.message}\n${res.data.details || ''}`);
             fetchData();
         } catch (err) {
             console.error(err);
