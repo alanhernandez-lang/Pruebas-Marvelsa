@@ -219,6 +219,8 @@ exports.importPeople = async (req, res) => {
         };
 
         for (const row of data) {
+            console.log('--- Procesando Fila ---', row);
+            
             const name = getCellValue(row, ['Nombre', 'Name', 'name']);
             let phone = String(getCellValue(row, ['Telefono', 'Teléfono', 'Phone', 'phone', 'Celular']) || '').replace(/\D/g, '');
             const typeStr = String(getCellValue(row, ['Tipo', 'Type', 'tipo', 'Rol']) || '').toUpperCase();
@@ -234,17 +236,17 @@ exports.importPeople = async (req, res) => {
                 const weight = isJury ? 70 : 30;
 
                 await new Promise((resolve, reject) => {
-                    // Use regular function to access 'this.changes'
                     db.run(targetSql, [name, phone, weight, token], function(err) {
                         if (err) {
-                            console.error('Row insert error:', err);
-                            // We don't reject here to allow other rows to continue, but we count it as skipped
+                            console.log(`❌ ERROR BD para ${name}:`, err.message);
                             skippedCount++;
                             resolve(); 
                         } else {
                             if (this && this.changes > 0) {
+                                console.log(`✅ INSERTADO: ${name} (${phone})`);
                                 insertedCount++;
                             } else {
+                                console.log(`⚠️ OMITIDO (Duplicado): ${name} (${phone})`);
                                 skippedCount++;
                             }
                             resolve();
@@ -252,6 +254,7 @@ exports.importPeople = async (req, res) => {
                     });
                 });
             } else {
+                console.log('⚠️ OMITIDO (Datos Incompletos):', { name: name || 'FALTANTE', phone: phone || 'FALTANTE' });
                 skippedCount++;
             }
         }
