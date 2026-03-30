@@ -176,40 +176,51 @@ exports.updatePerson = (req, res) => {
     }
 };
 
-exports.importPeople = (req, res) => {
+exports.importPeople = async (req, res) => {
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
 
     try {
-        const workbook = XLSX.readFile(req.file.path);
+        // Read from memory buffer instead of file path to support serverless environments (Vercel)
+        const workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
         const sheetName = workbook.SheetNames[0];
         const data = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
 
-        db.serialize(() => {
-            const juryStmt = db.prepare('INSERT OR IGNORE INTO jurados (name, phone, porcentaje, token) VALUES (?, ?, ?, ?)');
-            const publicStmt = db.prepare('INSERT OR IGNORE INTO registro_personas (name, phone, porcentaje, token) VALUES (?, ?, ?, ?)');
+        const isPostgres = !!process.env.DATABASE_URL;
 
-            data.forEach(row => {
-                const name = row.Nombre || row.Name || row.name;
-                const phone = String(row.Telefono || row.Teléfono || row.Phone || row.phone || '').replace(/\D/g, '');
-                const typeStr = (row.Tipo || row.Type || row.tipo || '').toUpperCase();
-                const token = generateShortToken();
+        const insertQuery = (table) => {
+            if (isPostgres) {
+                return `INSERT INTO ${table} (name, phone, porcentaje, token) VALUES (?, ?, ?, ?) ON CONFLICT (phone) DO NOTHING`;
+            } else {
+                return `INSERT OR IGNORE INTO ${table} (name, phone, porcentaje, token) VALUES (?, ?, ?, ?)`;
+            }
+        };
 
-                const isJury = typeStr === 'JURADO' || typeStr === 'JURY' || typeStr === 'J';
+        const jurySql = insertQuery('jurados');
+        const publicSql = insertQuery('registro_personas');
 
-                if (name && phone) {
-                    if (isJury) {
-                        juryStmt.run(name, phone, 70, token);
-                    } else {
-                        publicStmt.run(name, phone, 30, token);
-                    }
-                }
-            });
+        // Execute sequentially to avoid race conditions or DB locks
+        for (const row of data) {
+            const name = row.Nombre || row.Name || row.name;
+            const phone = String(row.Telefono || row.Teléfono || row.Phone || row.phone || '').replace(/\D/g, '');
+            const typeStr = (row.Tipo || row.Type || row.tipo || '').toUpperCase();
+            const token = generateShortToken();
 
-            juryStmt.finalize();
-            publicStmt.finalize();
+            const isJury = typeStr === 'JURADO' || typeStr === 'JURY' || typeStr === 'J';
 
-            res.json({ message: 'Import completed successfully' });
-        });
+            if (name && phone) {
+                const targetSql = isJury ? jurySql : publicSql;
+                const weight = isJury ? 70 : 30;
+
+                await new Promise((resolve, reject) => {
+                    db.run(targetSql, [name, phone, weight, token], (err) => {
+                        if (err) reject(err);
+                        else resolve();
+                    });
+                });
+            }
+        }
+
+        res.json({ message: `Import completed successfully. Processed ${data.length} rows.` });
     } catch (err) {
         console.error('Import error:', err);
         res.status(500).json({ error: 'Error processing Excel file: ' + err.message });

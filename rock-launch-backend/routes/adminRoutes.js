@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const adminController = require('../controllers/adminController');
-const upload = require('../utils/upload');
+const { upload, memoryUpload } = require('../utils/upload');
 const requireAdminAuth = require('../middleware/adminAuth');
 const rateLimit = require('../middleware/rateLimit');
 
@@ -24,7 +24,7 @@ router.get('/people', adminController.getPeople);
 router.post('/people', adminController.addPerson);
 router.delete('/people/:type/:id', adminController.deletePerson);
 router.put('/people/:type/:id', adminController.updatePerson);
-router.post('/people/import', upload.single('file'), adminController.importPeople);
+router.post('/people/import', memoryUpload.single('file'), adminController.importPeople);
 router.post('/people/sync-tokens', adminController.synchronizeTokens);
 
 // Stats

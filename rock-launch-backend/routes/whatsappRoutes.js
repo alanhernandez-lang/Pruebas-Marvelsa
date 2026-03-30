@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const whatsappController = require('../controllers/whatsappController');
-const upload = require('../utils/upload');
+const { upload } = require('../utils/upload');
 const requireAdminAuth = require('../middleware/adminAuth');
 const rateLimit = require('../middleware/rateLimit');
 
