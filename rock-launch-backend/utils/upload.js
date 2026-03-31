@@ -12,10 +12,16 @@ if (!isVercel && !fs.existsSync(uploadDir)) {
 // Disk storage for legacy/local photos (Won't persist on Vercel)
 const diskStorage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, uploadDir);
+        const absoluteUploadDir = path.join(__dirname, '..', 'uploads');
+        if (!fs.existsSync(absoluteUploadDir)) {
+            fs.mkdirSync(absoluteUploadDir, { recursive: true });
+        }
+        cb(null, absoluteUploadDir);
     },
     filename: (req, file, cb) => {
-        cb(null, Date.now() + '-' + file.originalname);
+        // Sanitize filename: remove spaces and special chars, keep dots and extension
+        const sanitized = file.originalname.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9.\-_]/g, '');
+        cb(null, Date.now() + '-' + sanitized);
     }
 });
 

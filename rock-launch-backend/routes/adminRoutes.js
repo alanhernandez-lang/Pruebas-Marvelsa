@@ -15,9 +15,9 @@ router.put('/departments/:id', adminController.updateDepartment);
 
 // Presenters
 router.get('/presenters', adminController.getPresenters);
-router.post('/presenters', upload.single('photo'), adminController.addPresenter);
+router.post('/presenters', memoryUpload.single('photo'), adminController.addPresenter);
 router.delete('/presenters/:id', adminController.deletePresenter);
-router.put('/presenters/:id', upload.single('photo'), adminController.updatePresenter);
+router.put('/presenters/:id', memoryUpload.single('photo'), adminController.updatePresenter);
 
 // People
 router.get('/people', adminController.getPeople);

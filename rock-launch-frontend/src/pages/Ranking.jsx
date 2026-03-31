@@ -228,10 +228,10 @@ const Ranking = () => {
                   <div style={{ fontSize: '0.65rem', color: '#64748b', textTransform: 'uppercase' }}>{pres.deptName}</div>
                 </div>
                 <div className="item-bar-track">
-                  <div className="item-bar-fill blue-glow" style={{ width: `${parseFloat(pres.combinedScore) * 10}%` }}>
+                    <div className="item-bar-fill blue-glow" style={{ width: `${parseFloat(pres.combinedScore) * 10}%` }}>
                     {pres.photo_url && (
                       <div className="item-avatar-ring presenter-photo-container" onClick={() => setZoomedPhoto({ ...pres, photo: pres.photo_url })}>
-                        <img src={`${BASE_API_URL}${pres.photo_url}`} alt="" />
+                        <img src={pres.photo_url.startsWith('data:') ? pres.photo_url : `${BASE_API_URL}${pres.photo_url}`} alt="" />
                       </div>
                     )}
                   </div>

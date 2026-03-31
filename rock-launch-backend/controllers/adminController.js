@@ -50,11 +50,17 @@ exports.getPresenters = (req, res) => {
 
 exports.addPresenter = (req, res) => {
     const { name, department_id } = req.body;
-    const photo_url = req.file ? `/uploads/${req.file.filename}` : null;
+    let photo_url = null;
+
+    if (req.file) {
+        const base64 = req.file.buffer.toString('base64');
+        photo_url = `data:${req.file.mimetype};base64,${base64}`;
+    }
+
     db.run('INSERT INTO presentadores (name, department_id, photo_url) VALUES (?, ?, ?)',
         [name, department_id, photo_url], function (err) {
             if (err) return handleSQLError(res, err);
-            res.json({ id: this.lastID, name, department_id, photo_url });
+            res.json({ id: this.lastID, name, department_id, photo_url: 'Base64 data saved' });
         });
 };
 
@@ -67,7 +73,12 @@ exports.deletePresenter = (req, res) => {
 
 exports.updatePresenter = (req, res) => {
     const { name, department_id } = req.body;
-    const photo_url = req.file ? `/uploads/${req.file.filename}` : null;
+    let photo_url = null;
+
+    if (req.file) {
+        const base64 = req.file.buffer.toString('base64');
+        photo_url = `data:${req.file.mimetype};base64,${base64}`;
+    }
 
     let query = 'UPDATE presentadores SET name = ?, department_id = ?';
     let params = [name, department_id];
@@ -81,7 +92,7 @@ exports.updatePresenter = (req, res) => {
 
     db.run(query, params, function (err) {
         if (err) return handleSQLError(res, err);
-        res.json({ message: 'Presenter updated' });
+        res.json({ message: 'Presenter updated', photo_url: photo_url ? 'Base64 data updated' : null });
     });
 };
 
