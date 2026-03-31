@@ -427,10 +427,10 @@ const Ranking = () => {
 
       {/* Photo Zoom Modal */}
       {zoomedPhoto && (
-        <div className="image-zoom-overlay" onClick={() => setZoomedPhoto(null)}>
-          <div className="image-zoom-content">
-            <img src={`${BASE_API_URL}${zoomedPhoto.photo}`} alt={zoomedPhoto.name} />
-            <div style={{ marginTop: '1rem', textAlign: 'center' }}>
+          <div className="image-zoom-overlay" onClick={() => setZoomedPhoto(null)}>
+            <div className="image-zoom-content">
+              <img src={zoomedPhoto.photo.startsWith('data:') ? zoomedPhoto.photo : `${BASE_API_URL}${zoomedPhoto.photo}`} alt={zoomedPhoto.name} />
+              <div style={{ marginTop: '1rem', textAlign: 'center' }}>
               <h2 style={{ margin: 0 }}>{zoomedPhoto.name}</h2>
               <p style={{ color: '#0ea5e9', margin: '5px 0 0' }}>Representante</p>
             </div>
