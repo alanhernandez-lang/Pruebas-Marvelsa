@@ -185,7 +185,7 @@ exports.importPeople = async (req, res) => {
         const workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
         const sheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[sheetName];
-        
+
         // Obtenemos los datos como matriz (arreglo de arreglos)
         const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
@@ -219,14 +219,14 @@ exports.importPeople = async (req, res) => {
             return res.status(400).json({ error: 'No se encontraron las columnas correctas (Nombre y Teléfono). Asegúrate de que las cabeceras estén en las primeras filas.' });
         }
 
-        console.log(`Cabeceras detectadas en fila ${headerRowIndex + 1}:`, { 
-            nombre: rows[headerRowIndex][columnMapping.name], 
+        console.log(`Cabeceras detectadas en fila ${headerRowIndex + 1}:`, {
+            nombre: rows[headerRowIndex][columnMapping.name],
             telefono: rows[headerRowIndex][columnMapping.phone],
             tipo: columnMapping.type !== -1 ? rows[headerRowIndex][columnMapping.type] : 'N/A'
         });
 
         const isPostgres = !!process.env.DATABASE_URL;
-        const insertQuery = (table) => isPostgres 
+        const insertQuery = (table) => isPostgres
             ? `INSERT INTO ${table} (name, phone, porcentaje, token) VALUES (?, ?, ?, ?) ON CONFLICT (phone) DO NOTHING`
             : `INSERT OR IGNORE INTO ${table} (name, phone, porcentaje, token) VALUES (?, ?, ?, ?)`;
 
@@ -254,7 +254,7 @@ exports.importPeople = async (req, res) => {
                 const token = generateShortToken();
 
                 await new Promise((resolve) => {
-                    db.run(targetSql, [name, phone, weight, token], function(err) {
+                    db.run(targetSql, [name, phone, weight, token], function (err) {
                         if (err) {
                             console.log(`❌ ERROR BD para ${name}:`, err.message);
                             skippedCount++;
@@ -275,7 +275,7 @@ exports.importPeople = async (req, res) => {
             }
         }
 
-        res.json({ 
+        res.json({
             message: 'Importación finalizada.',
             details: `Insertados: ${insertedCount}, Omitidos: ${skippedCount}`,
             total: rows.length - (headerRowIndex + 1)
@@ -500,3 +500,4 @@ exports.synchronizeTokens = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
+// Cambio de prueba para forzar subida
