@@ -203,9 +203,9 @@ function VotingFlow() {
                         currentDept.presenters.map(p => (
                             <div key={p.id} style={{ marginBottom: '2rem', padding: '1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px solid var(--glass-border)' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-                                    {p.photo ? (
+                                    {p.photo_url ? (
                                         <div className="presenter-photo-container" onClick={() => setZoomedPhoto(p)}>
-                                            <img src={`${BASE_API_URL}${p.photo}`} alt={p.name} style={{ width: '50px', height: '50px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--accent)' }} />
+                                            <img src={`${BASE_API_URL}${p.photo_url}`} alt={p.name} style={{ width: '50px', height: '50px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--accent)' }} />
                                         </div>
                                     ) : (
                                         <div style={{ width: '50px', height: '50px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem' }}>👤</div>
@@ -372,7 +372,7 @@ function VotingFlow() {
             {zoomedPhoto && (
                 <div className="image-zoom-overlay" onClick={() => setZoomedPhoto(null)}>
                     <div className="image-zoom-content">
-                        <img src={`${BASE_API_URL}${zoomedPhoto.photo}`} alt={zoomedPhoto.name} />
+                        <img src={`${BASE_API_URL}${zoomedPhoto.photo_url}`} alt={zoomedPhoto.name} />
                         <div style={{ marginTop: '1rem', textAlign: 'center' }}>
                             <h2 style={{ margin: 0 }}>{zoomedPhoto.name}</h2>
                             <p style={{ color: 'var(--accent)', margin: '5px 0 0' }}>Presentador</p>
