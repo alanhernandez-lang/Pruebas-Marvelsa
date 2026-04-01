@@ -27,7 +27,8 @@ const Hero = ({ isVotingEnabled }) => {
                 if (token) {
                   navigate(`/votar?token=${token}`);
                 } else {
-                  navigate('/vote');
+                  // NO TOKEN: Send them to /votar to show the error
+                  navigate('/votar');
                 }
               }
             }}

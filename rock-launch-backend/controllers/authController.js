@@ -63,11 +63,6 @@ exports.validateToken = (req, res) => {
         return res.status(400).json({ error: 'Token no proporcionado.' });
     }
 
-    const TARGET_DATE = new Date("April 14, 2026 13:00:00");
-    if (new Date() < TARGET_DATE) {
-        return res.status(403).json({ error: 'La votación aún no ha comenzado.' });
-    }
-
     const queryJury = `SELECT *, 'JURY' as type FROM jurados WHERE token = ?`;
     const queryPublic = `SELECT *, 'PUBLIC' as type FROM registro_personas WHERE token = ?`;
 
