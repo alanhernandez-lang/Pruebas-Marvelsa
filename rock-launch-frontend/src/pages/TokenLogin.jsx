@@ -13,7 +13,7 @@ function TokenLogin() {
     const [isTooEarly, setIsTooEarly] = useState(false);
     const [isVotingEnabled, setIsVotingEnabled] = useState(false);
 
-    const TARGET_DATE = "April 1, 2026 10:45:00";
+    const TARGET_DATE = "April 1, 2026 12:10:00";
 
     const validateToken = useCallback(async () => {
         const token = searchParams.get('token');
@@ -89,12 +89,12 @@ function TokenLogin() {
                         <p style={{ color: 'var(--text-muted)', marginBottom: '2rem' }}>
                             Tu acceso está listo, pero la votación comenzará en:
                         </p>
-                        
+
                         <div style={{ transform: 'scale(0.8)', margin: '-1rem 0 1rem' }}>
                             <Countdown targetDate={TARGET_DATE} onFinish={handleCountdownFinish} />
                         </div>
 
-                        <button 
+                        <button
                             className={`btn-primary ${!isVotingEnabled ? 'btn-disabled' : ''}`}
                             disabled={!isVotingEnabled}
                             onClick={validateToken}

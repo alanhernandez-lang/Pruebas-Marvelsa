@@ -10,7 +10,7 @@ function VotingFlow() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const TARGET_DATE = new Date("April 1, 2026 10:45:00");
+        const TARGET_DATE = new Date("April 1, 2026 12:10:00");
         if (new Date() < TARGET_DATE) {
             navigate('/');
         }
