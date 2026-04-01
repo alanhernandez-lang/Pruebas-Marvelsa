@@ -20,7 +20,17 @@ const Hero = ({ isVotingEnabled }) => {
         <div className="hero-actions">
           <button
             className={`btn-primary main-cta ${!isVotingEnabled ? 'btn-disabled' : ''}`}
-            onClick={() => isVotingEnabled && navigate('/vote')}
+            onClick={() => {
+              if (isVotingEnabled) {
+                const params = new URLSearchParams(window.location.search);
+                const token = params.get('token');
+                if (token) {
+                  navigate(`/votar?token=${token}`);
+                } else {
+                  navigate('/vote');
+                }
+              }
+            }}
             disabled={!isVotingEnabled}
             title={!isVotingEnabled ? "Votación habilitada próximamente" : "Ir a votar"}
           >

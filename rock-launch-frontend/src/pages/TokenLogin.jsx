@@ -20,6 +20,15 @@ function TokenLogin() {
         }
 
         const validateToken = async () => {
+            const TARGET_DATE = new Date("April 14, 2026 13:00:00");
+            const now = new Date();
+
+            if (now < TARGET_DATE) {
+                // If too early, send back to home so they see the countdown
+                navigate(`/?token=${token}`);
+                return;
+            }
+
             try {
                 const res = await axios.get(`auth/validate-token?token=${token}`);
                 const userData = res.data.user;

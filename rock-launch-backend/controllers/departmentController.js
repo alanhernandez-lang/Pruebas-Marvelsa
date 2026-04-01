@@ -25,7 +25,7 @@ exports.getDepartments = (req, res) => {
                 dept.presenters.push({
                     id: row.presenter_id,
                     name: row.presenter_name,
-                    photo: row.presenter_photo
+                    photo_url: row.presenter_photo
                 });
             }
         });

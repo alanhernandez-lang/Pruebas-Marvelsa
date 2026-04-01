@@ -8,8 +8,12 @@ function Welcome() {
     const navigate = useNavigate();
     const [isVotingEnabled, setIsVotingEnabled] = React.useState(false);
     const [showScrollTop, setShowScrollTop] = React.useState(false);
+    const [hasToken, setHasToken] = React.useState(false);
 
     useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('token')) setHasToken(true);
+
         const handleScroll = () => {
             if (window.scrollY > 500) {
                 setShowScrollTop(true);
@@ -41,15 +45,15 @@ function Welcome() {
 
         document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
-        // AUTO-REDIRECT if there's a token in the URL (Home page fallback)
-        const params = new URLSearchParams(window.location.search);
-        const token = params.get('token');
-        if (token) {
+        // AUTO-REDIRECT only if time has come AND we have a token
+        if (hasToken && isVotingEnabled) {
+            const params = new URLSearchParams(window.location.search);
+            const token = params.get('token');
             navigate(`/votar?token=${token}`);
         }
 
         return () => observer.disconnect();
-    }, [navigate]);
+    }, [navigate, isVotingEnabled, hasToken]);
 
     return (
         <div className="landing-page">
@@ -80,6 +84,17 @@ function Welcome() {
                             onFinish={handleCountdownFinish}
                         />
                     </div>
+                    
+                    {hasToken && !isVotingEnabled && (
+                        <div className="token-status fade-in" style={{ marginTop: '2rem', padding: '1rem', background: 'rgba(212, 175, 55, 0.05)', borderRadius: '12px', border: '1px solid rgba(212, 175, 55, 0.2)', display: 'inline-block' }}>
+                            <p style={{ color: 'var(--accent)', margin: 0, fontWeight: '600', fontSize: '1.1rem' }}>
+                                ✅ INVITACIÓN DETECTADA
+                            </p>
+                            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '0.5rem' }}>
+                                Tu acceso está listo. Podrás ingresar cuando el contador llegue a cero.
+                            </p>
+                        </div>
+                    )}
                 </div>
             </section>
             <section id="about" className="features-section">
