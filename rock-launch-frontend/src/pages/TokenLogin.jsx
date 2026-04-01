@@ -33,6 +33,15 @@ function TokenLogin() {
             const userData = res.data.user;
 
             login(userData);
+            
+            // Limpiar temporizadores previos de este usuario para que al entrar a votar 
+            // siempre empiecen los 5 minutos desde cero para el primer departamento.
+            Object.keys(localStorage).forEach(key => {
+                if (key.startsWith(`cooldown_${userData.id}_`)) {
+                    localStorage.removeItem(key);
+                }
+            });
+
             setStatus('¡Validación exitosa! Redirigiendo...');
 
             setTimeout(() => {

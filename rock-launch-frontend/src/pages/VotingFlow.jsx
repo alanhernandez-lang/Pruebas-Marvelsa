@@ -9,6 +9,8 @@ function VotingFlow() {
     const { user, login } = useContext(UserContext);
     const navigate = useNavigate();
 
+    const COOLDOWN_SEC = 300; // 5 minutos
+
     useEffect(() => {
         const TARGET_DATE = new Date("April 1, 2026 12:10:00");
         if (new Date() < TARGET_DATE) {
@@ -52,7 +54,6 @@ function VotingFlow() {
     useEffect(() => {
         if (!currentDept || !user) return;
 
-        const COOLDOWN_SEC = 300; // 5 minutes
         const storageKey = `cooldown_${user.id}_dept_${currentDept.id}`;
         const storedStart = localStorage.getItem(storageKey);
 
@@ -101,6 +102,14 @@ function VotingFlow() {
         try {
             await axios.post('auth/reset-index', { user_id: user.id, user_type: user.type });
             const resetUser = { ...user, current_dept_index: 0 };
+            
+            // Limpiar temporizadores para permitir volver a empezar con los 5 minutos completos
+            Object.keys(localStorage).forEach(key => {
+                if (key.startsWith(`cooldown_${user.id}_`)) {
+                    localStorage.removeItem(key);
+                }
+            });
+
             login(resetUser);
             setCriteria({ attitude: 0, creativity: 0, clarity: 0, impact: 0 });
             setPresenterScores({});
@@ -247,7 +256,7 @@ function VotingFlow() {
                                 bottom: 0,
                                 height: '3px',
                                 background: 'var(--accent)',
-                                width: `${(timeLeft / 300) * 100}%`,
+                                width: `${(timeLeft / COOLDOWN_SEC) * 100}%`,
                                 transition: 'width 1s linear'
                             }} />
                         )}
