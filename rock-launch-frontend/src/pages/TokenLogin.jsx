@@ -13,7 +13,7 @@ function TokenLogin() {
     const [isTooEarly, setIsTooEarly] = useState(false);
     const [isVotingEnabled, setIsVotingEnabled] = useState(false);
 
-    const TARGET_DATE = "April 1, 2026 12:10:00";
+    const TARGET_DATE = "April 7, 2026 13:40:00";
 
     const validateToken = useCallback(async () => {
         const token = searchParams.get('token');
