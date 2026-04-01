@@ -9,6 +9,13 @@ function VotingFlow() {
     const { user, login } = useContext(UserContext);
     const navigate = useNavigate();
 
+    useEffect(() => {
+        const TARGET_DATE = new Date("April 1, 2026 10:45:00");
+        if (new Date() < TARGET_DATE) {
+            navigate('/');
+        }
+    }, [navigate]);
+
     // State
     const [departments, setDepartments] = useState([]);
     const [loading, setLoading] = useState(true);
