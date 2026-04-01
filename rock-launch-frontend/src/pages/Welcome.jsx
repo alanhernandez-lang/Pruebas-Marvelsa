@@ -80,11 +80,11 @@ function Welcome() {
                     <h2 className="reveal" style={{ fontSize: '1.2rem', letterSpacing: '0.4rem', color: 'var(--accent)', fontWeight: '700', marginBottom: '1rem' }}>FALTAN</h2>
                     <div className="reveal">
                         <Countdown
-                            targetDate="April 14, 2026 13:00:00"
+                            targetDate="April 1, 2026 10:15:00"
                             onFinish={handleCountdownFinish}
                         />
                     </div>
-                    
+
                     {hasToken && !isVotingEnabled && (
                         <div className="token-status fade-in" style={{ marginTop: '2rem', padding: '1rem', background: 'rgba(212, 175, 55, 0.05)', borderRadius: '12px', border: '1px solid rgba(212, 175, 55, 0.2)', display: 'inline-block' }}>
                             <p style={{ color: 'var(--accent)', margin: 0, fontWeight: '600', fontSize: '1.1rem' }}>
