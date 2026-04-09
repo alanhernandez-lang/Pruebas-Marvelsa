@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Hero from '../components/Hero';
 import Countdown from '../components/Countdown';
 import EvaluationCriteria from '../components/EvaluationCriteria';
+import VotingProcess from '../components/VotingProcess';
 
 function Welcome() {
     const navigate = useNavigate();
@@ -80,7 +81,7 @@ function Welcome() {
                     <h2 className="reveal" style={{ fontSize: '1.2rem', letterSpacing: '0.4rem', color: 'var(--accent)', fontWeight: '700', marginBottom: '1rem' }}>FALTAN</h2>
                     <div className="reveal">
                         <Countdown
-                            targetDate="April 7, 2026 13:40:00"
+                            targetDate="April 13, 2026 13:35:00"
                             onFinish={handleCountdownFinish}
                         />
                     </div>
@@ -115,6 +116,7 @@ function Welcome() {
 
                     <h2 className="section-title reveal">CRITERIOS DE EVALUACIÓN</h2>
                     <EvaluationCriteria />
+                    <VotingProcess />
 
                 </div>
             </section>

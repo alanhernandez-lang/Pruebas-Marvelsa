@@ -12,7 +12,7 @@ function VotingFlow() {
     const COOLDOWN_SEC = 60; // 1 minuto
 
     useEffect(() => {
-        const TARGET_DATE = new Date("April 7, 2026 13:40:00");
+        const TARGET_DATE = new Date("April 13, 2026 13:35:00");
         if (new Date() < TARGET_DATE) {
             navigate('/');
         }

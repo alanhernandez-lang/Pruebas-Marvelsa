@@ -63,7 +63,7 @@ exports.validateToken = (req, res) => {
         return res.status(400).json({ error: 'Token no proporcionado.' });
     }
 
-    const TARGET_DATE = new Date("April 7, 2026 13:40:00");
+    const TARGET_DATE = new Date("April 13, 2026 13:35:00");
     if (new Date() < TARGET_DATE) {
         return res.status(403).json({ error: 'La votación aún no ha comenzado.' });
     }
