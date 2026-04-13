@@ -69,13 +69,15 @@ exports.sendTemplate = async (req, res) => {
             ? { type: "image", image: { id: mediaId } }
             : { type: "image", image: { link: ROCKET_IMAGE_URL } };
 
+        console.log(`Sending template: ${templateName} to ${cleanPhone}`);
+
         const payload = {
             messaging_product: "whatsapp",
             to: cleanPhone,
             type: "template",
             template: {
                 name: templateName,
-                language: { code: "es" },
+                language: { code: "en" },
                 components: [
                     { type: "header", parameters: [headerParam] },
                     {
@@ -139,7 +141,9 @@ exports.sendBulkTemplates = async (req, res) => {
                 type: "template",
                 template: {
                     name: templateName,
-                    language: { code: "es" },
+                    language: {
+                        code: 'en'
+                    },
                     components: [
                         { type: "header", parameters: [headerParam] },
                         {
