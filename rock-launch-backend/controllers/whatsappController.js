@@ -179,10 +179,10 @@ exports.sendBulkTemplates = async (req, res) => {
 exports.uploadToMeta = async (req, res) => {
     try {
         if (!req.file) return res.status(400).json({ error: 'Debes seleccionar una imagen' });
-        const filePath = req.file.path;
         const form = new FormData();
         form.append('messaging_product', 'whatsapp');
-        form.append('file', fs.createReadStream(filePath), { contentType: req.file.mimetype, filename: req.file.originalname });
+        // Use buffer instead of ReadStream for Vercel
+        form.append('file', req.file.buffer, { contentType: req.file.mimetype, filename: req.file.originalname });
         form.append('type', 'image');
 
         const url = `${FACEBOOK_GRAPH_URL}/${WHATSAPP_VERSION}/${process.env.WHATSAPP_PHONE_ID}/media`;
