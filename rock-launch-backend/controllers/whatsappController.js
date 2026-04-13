@@ -75,7 +75,7 @@ exports.sendTemplate = async (req, res) => {
             type: "template",
             template: {
                 name: templateName,
-                language: { code: "en" },
+                language: { code: "es" },
                 components: [
                     { type: "header", parameters: [headerParam] },
                     {
@@ -86,7 +86,8 @@ exports.sendTemplate = async (req, res) => {
             }
         };
 
-        console.log(`[WhatsApp] Replicando comando exitoso (v24.0 + lowercase) para ${cleanPhone}...`);
+        console.log(`[WhatsApp] Intentando enviar plantilla (${WHATSAPP_VERSION}) a ${cleanPhone}...`);
+        if (mediaId) console.log(`[WhatsApp] Usando Media ID: ${mediaId}`);
 
         const response = await axios.post(url, payload, {
             headers: {
@@ -98,7 +99,7 @@ exports.sendTemplate = async (req, res) => {
         });
 
         if (response.status >= 200 && response.status < 300) {
-            console.log(`[WhatsApp] EXITO BRUTAL (v24.0) para ${cleanPhone}:`, JSON.stringify(response.data, null, 2));
+            console.log(`[WhatsApp] EXITO para ${cleanPhone}:`, JSON.stringify(response.data, null, 2));
             return res.json({ success: true, messageId: response.data.messages?.[0]?.id, data: response.data });
         } else {
             console.error(`[WhatsApp] ERROR de Meta (${response.status}):`, JSON.stringify(response.data, null, 2));
@@ -138,7 +139,7 @@ exports.sendBulkTemplates = async (req, res) => {
                 type: "template",
                 template: {
                     name: templateName,
-                    language: { code: "en" },
+                    language: { code: "es" },
                     components: [
                         { type: "header", parameters: [headerParam] },
                         {

@@ -124,7 +124,7 @@ function Welcome() {
 
             <footer className="landing-footer">
                 <div className="container">
-                    <p>Rock Launch 2025 © Grupo Marvelsa - Todos los derechos reservados</p>
+                    <p>Rock Launch © Grupo Marvelsa - Todos los derechos reservados</p>
                 </div>
             </footer>
 

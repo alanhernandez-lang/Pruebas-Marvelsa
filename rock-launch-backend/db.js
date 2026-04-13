@@ -13,7 +13,10 @@ const normalizeNumericStrings = (row) => {
     Object.keys(row).forEach((key) => {
         if (typeof row[key] === 'string' && /^-?\d+\.?\d*$/.test(row[key])) {
             const num = Number(row[key]);
-            if (!Number.isNaN(num)) row[key] = num;
+            // Only convert if the string representation matches exactly to avoid precision loss or leading zero loss
+            if (!Number.isNaN(num) && String(num) === row[key]) {
+                row[key] = num;
+            }
         }
     });
     return row;

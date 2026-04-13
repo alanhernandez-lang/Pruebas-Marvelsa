@@ -34,7 +34,7 @@ const VotingProcess = () => {
                 <span style={{ fontSize: '0.4em', display: 'block', color: 'var(--accent)', letterSpacing: '0.8rem', marginBottom: '0.5rem', fontWeight: '500' }}>¿CÓMO FUNCIONA?</span>
                 PROCESO DE VOTACIÓN
             </h2>
-            
+
             <div className="process-grid">
                 {steps.map((step, index) => (
                     <div key={step.id} className="process-card reveal" style={{ transitionDelay: `${index * 100}ms` }}>
@@ -45,14 +45,6 @@ const VotingProcess = () => {
                     </div>
                 ))}
             </div>
-
-            <div className="important-info reveal" style={{ marginTop: '5rem', padding: '3rem', background: 'rgba(212, 175, 55, 0.03)', borderRadius: '30px', border: '1px solid rgba(212, 175, 55, 0.1)', textAlign: 'center' }}>
-                <h3 style={{ color: 'var(--accent)', fontSize: '1.5rem', marginBottom: '1.5rem', fontWeight: '800' }}>⚠️ NOTA IMPORTANTE</h3>
-                <p style={{ maxWidth: '800px', margin: '0 auto', fontSize: '1.1rem', color: 'var(--text-muted)', lineHeight: '1.8' }}>
-                    Para garantizar una evaluación justa, el botón de <strong>"ENVIAR"</strong> se activará únicamente cuando el cronómetro de la presentación llegue a cero. Asegúrate de prestar atención a cada detalle antes de emitir tu voto, ya que <strong>no se podrán realizar cambios</strong> una vez enviado el bloque.
-                </p>
-            </div>
-
             <style>{`
                 .process-container {
                     padding: 6rem 0;
