@@ -38,13 +38,17 @@ const saveSetting = (key, value) => {
 const formatPhone = (phone) => {
     let clean = String(phone).replace(/\D/g, '');
 
-    // Si tiene 10 dígitos (MX), prepender 521 (13 dígitos)
-    // Esto coincide con el formato 'From' visto en tu panel de Meta (+52 1...)
+    // Si ya empieza con 1 (USA/Canada) y tiene 11 dígitos, dejarlo así
+    if (clean.length === 11 && clean.startsWith('1')) {
+        return clean;
+    }
+
+    // Si tiene 10 dígitos y NO empieza con 1, asumir México y prepender 521
     if (clean.length === 10) {
         return '521' + clean;
     }
 
-    // Si tiene 12 dígitos y empieza con 52, convertir a 521
+    // Si tiene 12 dígitos y empieza con 52, asegurar que tenga el '1' después del 52 (formato 521...)
     if (clean.length === 12 && clean.startsWith('52')) {
         return '521' + clean.slice(2);
     }

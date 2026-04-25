@@ -257,7 +257,10 @@ exports.importPeople = async (req, res) => {
             let typeStr = columnMapping.type !== -1 ? String(row[columnMapping.type] || "").toUpperCase() : "";
 
             if (name && phone) {
-                if (phone.length === 10) phone = '52' + phone;
+                // Si tiene 10 dígitos y NO empieza con 1 (USA), prepender 52 (MX)
+                if (phone.length === 10 && !phone.startsWith('1')) {
+                    phone = '52' + phone;
+                }
 
                 const isJury = typeStr.includes('JURADO') || typeStr.includes('JURY') || typeStr === 'J' || typeStr.includes('JURADA');
                 const targetSql = isJury ? jurySql : publicSql;
