@@ -407,9 +407,25 @@ function AdminDashboard() {
             {activeTab === 'people' && (
                 <div className="card glass">
                     <h3>{editingPerson ? 'Editar Persona' : 'Registro de Personas (Jurado y Público)'}</h3>
-                    <form onSubmit={handleAddPerson} style={{ display: 'grid', gridTemplateColumns: '1fr 80px 1fr auto', gap: '1rem', marginBottom: '1rem', alignItems: 'center' }}>
+                    <form onSubmit={handleAddPerson} style={{ display: 'grid', gridTemplateColumns: '1fr 130px 1fr auto', gap: '1rem', marginBottom: '1rem', alignItems: 'center' }}>
                         <input type="text" placeholder="Nombre completo" value={newPerson.name} onChange={e => setNewPerson({ ...newPerson, name: e.target.value })} required />
-                        <input type="text" placeholder="Clave" value={newPerson.countryCode} onChange={e => setNewPerson({ ...newPerson, countryCode: e.target.value.replace(/\D/g, '') })} required />
+                        <select 
+                            value={newPerson.countryCode} 
+                            onChange={e => setNewPerson({ ...newPerson, countryCode: e.target.value })}
+                            style={{ width: '120px' }}
+                            required
+                        >
+                            <option value="521">🇲🇽 +52 (MX)</option>
+                            <option value="1">🇺🇸 +1 (USA)</option>
+                            <option value="1">🇨🇦 +1 (CAN)</option>
+                            <option value="502">🇬🇹 +502 (GT)</option>
+                            <option value="503">🇸🇻 +503 (SV)</option>
+                            <option value="504">🇭🇳 +504 (HN)</option>
+                            <option value="506">🇨🇷 +506 (CR)</option>
+                            <option value="507">🇵🇦 +507 (PA)</option>
+                            <option value="57">🇨🇴 +57 (CO)</option>
+                            <option value="58">🇻🇪 +58 (VE)</option>
+                        </select>
                         <input type="tel" placeholder="Teléfono" value={newPerson.phone} onChange={e => setNewPerson({ ...newPerson, phone: e.target.value.replace(/\D/g, '').slice(0, 10) })} required />
                         <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
                             <input type="checkbox" checked={newPerson.isJury} onChange={e => setNewPerson({ ...newPerson, isJury: e.target.checked })} style={{ width: 'auto' }} />
