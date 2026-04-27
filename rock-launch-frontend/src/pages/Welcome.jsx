@@ -81,7 +81,7 @@ function Welcome() {
                     <h2 className="reveal" style={{ fontSize: '1.2rem', letterSpacing: '0.4rem', color: 'var(--accent)', fontWeight: '700', marginBottom: '1rem' }}>FALTAN</h2>
                     <div className="reveal">
                         <Countdown
-                            targetDate="April 27, 2026 14:05:00"
+                            targetDate="April 27, 2026 14:10:00"
                             onFinish={handleCountdownFinish}
                         />
                     </div>
