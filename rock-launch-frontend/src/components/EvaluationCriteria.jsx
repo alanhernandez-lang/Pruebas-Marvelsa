@@ -5,7 +5,7 @@ const EvaluationCriteria = () => {
         {
             id: 1,
             title: 'Impacto',
-            description: 'Evalúa el resultado real y positivo que dejó el Rock.',
+            description: 'Evalúa el resultado real y positivo que dejaron los Rocks trabajados en el 2025.',
             color: '#10b981', // Green
             icon: '1'
         },

@@ -81,7 +81,7 @@ function Welcome() {
                     <h2 className="reveal" style={{ fontSize: '1.2rem', letterSpacing: '0.4rem', color: 'var(--accent)', fontWeight: '700', marginBottom: '1rem' }}>FALTAN</h2>
                     <div className="reveal">
                         <Countdown
-                            targetDate="April 27, 2026 14:20:00"
+                            targetDate="May 13, 2026 13:30:00"
                             onFinish={handleCountdownFinish}
                         />
                     </div>
@@ -106,7 +106,7 @@ function Welcome() {
                     </h2>
                     <div className="about-content reveal glass">
                         <p className="about-paragraph">
-                            El <span className="highlight-accent">Rock Launch</span> es el punto de <span className="highlight-glow">ignición</span> donde la <span className="highlight-white">estrategia</span> se encuentra con la <span className="highlight-accent">pasión</span>. No es una simple rendición de cuentas ni una reunión corporativa más; es un evento de <span className="highlight-white">alto impacto</span> diseñado para que cada equipo demuestre cómo sus <span className="highlight-accent">Rocks</span>  están moviendo la aguja de la empresa hacia su visión a <span className="highlight-white">largo plazo</span>.
+                            El <span className="highlight-accent">Rock Launch</span> es el punto de <span className="highlight-glow">ignición</span> donde la <span className="highlight-white">estrategia</span> se encuentra con la <span className="highlight-accent">pasión</span>. No es una simple rendición de cuentas ni una reunión corporativa más; es un evento de <span className="highlight-white">alto impacto</span> diseñado para que cada equipo demuestre cómo los <span className="highlight-accent">Rocks trabajados en el 2025</span> están moviendo la aguja de la empresa hacia su visión a <span className="highlight-white">largo plazo</span>.
                         </p>
                         <p className="about-paragraph" style={{ marginTop: '1.5rem', fontSize: '1.1rem' }}>
                             Para garantizar la transparencia, la votación es <span className="highlight-white">nominal y personal</span>.<br /><br />

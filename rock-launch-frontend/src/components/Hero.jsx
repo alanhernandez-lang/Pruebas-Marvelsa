@@ -14,7 +14,7 @@ const Hero = ({ isVotingEnabled }) => {
           <span className="title-main">NUEVA ERA</span>
         </h1>
         <p className="hero-subtitle">
-          Rock Launch 2025 es el epicentro de la disrupción tecnológica.
+          Rock Launch 2025: Evaluando el impacto de los Rocks trabajados durante el año.
           Únete a los líderes que están forjando el destino de la industria.
         </p>
         <div className="hero-actions">
