@@ -362,7 +362,6 @@ function AdminDashboard() {
                         ) : (
                             depts.map(d => (
                                 <div key={d.id} className="dept-card">
-                                    <div className="dept-badge">ID: {d.id}</div>
                                     <div className="dept-name">{d.name}</div>
                                     <div className="dept-meta">
                                         <span style={{ color: 'var(--accent)', fontWeight: '600' }}>#{d.display_order || 0}</span> en la lista de votación
