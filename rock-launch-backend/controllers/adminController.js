@@ -259,7 +259,7 @@ exports.importPeople = async (req, res) => {
             if (name && phone) {
                 // Si tiene 10 dígitos y NO empieza con 1 (USA), prepender 52 (MX)
                 if (phone.length === 10 && !phone.startsWith('1')) {
-                    phone = '52' + phone;
+                    phone = '521' + phone;
                 }
 
                 const isJury = typeStr.includes('JURADO') || typeStr.includes('JURY') || typeStr === 'J' || typeStr.includes('JURADA');
