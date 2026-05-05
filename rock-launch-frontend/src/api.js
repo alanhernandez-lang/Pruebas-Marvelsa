@@ -1,6 +1,10 @@
 import axios from 'axios';
 
-export const BASE_API_URL = import.meta.env.VITE_API_URL || (window.location.hostname === 'localhost' ? 'http://localhost:3000' : 'https://rock-launch-backend.vercel.app');
+let envUrl = import.meta.env.VITE_API_URL;
+if (envUrl && envUrl.includes('pruebas-marvelsa.vercel.app')) {
+    envUrl = 'https://rock-launch-backend.vercel.app';
+}
+export const BASE_API_URL = envUrl || (window.location.hostname === 'localhost' ? 'http://localhost:3000' : 'https://rock-launch-backend.vercel.app');
 
 const api = axios.create({
     baseURL: `${BASE_API_URL}/api/`,
