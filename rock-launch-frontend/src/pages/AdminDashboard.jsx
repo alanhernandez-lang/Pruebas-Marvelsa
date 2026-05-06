@@ -1,11 +1,12 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios, { BASE_API_URL } from '../api';
 import io from 'socket.io-client';
 
+const socket = io(BASE_API_URL);
+
 function AdminDashboard() {
-    const socketRef = useRef(null);
+    const [stats, setStats] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
     const [activeTab, setActiveTab] = useState('depts');
 
     // CRUD State
@@ -42,31 +43,21 @@ function AdminDashboard() {
             setDepts(sortedDepts);
             setPresenters(presRes.data);
             setPeople(peopleRes.data);
+
+            const mediaRes = await axios.get('whatsapp/media-info');
+            setMetaMediaId(mediaRes.data.media_id);
+
             setLoading(false);
         } catch (err) {
             console.error("Error fetching admin data", err);
-            setError(err.response?.data?.error || err.message || "Error de conexión con el servidor");
             setLoading(false);
-            return;
-        }
-
-        try {
-            const mediaRes = await axios.get('whatsapp/media-info');
-            setMetaMediaId(mediaRes.data.media_id);
-        } catch {
-            // Non-critical: WhatsApp media info unavailable
         }
     };
 
     useEffect(() => {
         fetchData();
-        const socket = io(BASE_API_URL, { transports: ['websocket', 'polling'] });
-        socketRef.current = socket;
         socket.on('vote_update', fetchData);
-        return () => {
-            socket.off('vote_update');
-            socket.disconnect();
-        };
+        return () => socket.off('vote_update');
     }, []);
 
     // Change URL based on template
@@ -304,25 +295,7 @@ function AdminDashboard() {
         }
     };
 
-    if (loading) return <div className="container" style={{ textAlign: 'center', marginTop: '4rem' }}>Cargando dashboard...</div>;
-
-    if (error) {
-        return (
-            <div className="container" style={{ marginTop: '4rem' }}>
-                <div className="card glass" style={{ border: '1px solid #ef4444', textAlign: 'center' }}>
-                    <h2 style={{ color: '#ef4444' }}>⚠️ Error de Conexión</h2>
-                    <p>{error}</p>
-                    <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>
-                        El servidor no responde o hay un problema con la base de datos. 
-                        Verifica que el backend esté en ejecución y la configuración de Postgres sea correcta.
-                    </p>
-                    <button className="btn-primary" onClick={() => { setError(null); setLoading(true); fetchData(); }} style={{ marginTop: '1rem' }}>
-                        Reintentar
-                    </button>
-                </div>
-            </div>
-        );
-    }
+    if (loading) return <div className="container">Cargando dashboard...</div>;
 
     return (
         <div className="container">
@@ -336,76 +309,25 @@ function AdminDashboard() {
             </header>
 
             {activeTab === 'depts' && (
-                <div className="card glass fade-in">
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                        <h3 style={{ margin: 0, fontSize: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                            <span style={{ color: 'var(--accent)' }}>📁</span> 
-                            {editingDeptId ? 'Editar Departamento' : 'Gestión de Departamentos'}
-                        </h3>
-                    </div>
-
-                    <div className="admin-form-container">
-                        <form onSubmit={handleAddDept} style={{ display: 'flex', gap: '1rem', alignItems: 'flex-end' }}>
-                            <div style={{ flex: 1 }}>
-                                <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.5rem', fontWeight: '600', textTransform: 'uppercase' }}>Nombre del Departamento</label>
-                                <input 
-                                    type="text" 
-                                    placeholder="Ej. Recursos Humanos" 
-                                    value={newDeptName} 
-                                    onChange={e => setNewDeptName(e.target.value)} 
-                                    required 
-                                />
-                            </div>
-                            <div style={{ width: '100px' }}>
-                                <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.5rem', fontWeight: '600', textTransform: 'uppercase' }}>Orden</label>
-                                <input 
-                                    type="number" 
-                                    placeholder="0" 
-                                    value={newDeptOrder} 
-                                    onChange={e => setNewDeptOrder(e.target.value)} 
-                                />
-                            </div>
-                            <button type="submit" className="btn-primary" style={{ padding: '0.75rem 1.5rem', fontSize: '0.9rem', height: '45px' }}>
-                                {editingDeptId ? 'Actualizar' : '＋ Añadir'}
-                            </button>
-                            {editingDeptId && (
-                                <button 
-                                    type="button" 
-                                    className="btn-secondary" 
-                                    style={{ height: '45px', padding: '0 1rem' }}
-                                    onClick={() => { setEditingDeptId(null); setNewDeptName(''); setNewDeptOrder(0); }}
-                                >
-                                    Cancelar
-                                </button>
-                            )}
-                        </form>
-                    </div>
-
-                    <div className="admin-card-grid">
-                        {depts.length === 0 ? (
-                            <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
-                                No hay departamentos registrados aún.
-                            </div>
-                        ) : (
-                            depts.map(d => (
-                                <div key={d.id} className="dept-card">
-                                    <div className="dept-name">{d.name}</div>
-                                    <div className="dept-meta">
-                                        <span style={{ color: 'var(--accent)', fontWeight: '600' }}>#{d.display_order || 0}</span> en la lista de votación
-                                    </div>
-                                    
-                                    <div className="dept-actions">
-                                        <button className="dept-btn-edit" onClick={() => handleEditDept(d)}>
-                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                                            Editar
-                                        </button>
-                                        <button className="dept-btn-delete" onClick={() => handleDeleteDept(d.id)} title="Eliminar">
-                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
-                                        </button>
-                                    </div>
+                <div className="card glass">
+                    <h3>{editingDeptId ? 'Editar Departamento' : 'Añadir Departamento'}</h3>
+                    <form onSubmit={handleAddDept} style={{ display: 'flex', gap: '1rem', marginBottom: '2rem' }}>
+                        <input type="text" placeholder="Nombre del departamento" value={newDeptName} onChange={e => setNewDeptName(e.target.value)} required style={{ flex: 1 }} />
+                        <input type="number" placeholder="Orden" value={newDeptOrder} onChange={e => setNewDeptOrder(e.target.value)} style={{ width: '80px' }} />
+                        <button type="submit" className="btn-primary">{editingDeptId ? 'Guardar' : 'Añadir'}</button>
+                        {editingDeptId && <button type="button" className="btn-secondary" onClick={() => { setEditingDeptId(null); setNewDeptName(''); setNewDeptOrder(0); }}>Cancelar</button>}
+                    </form>
+                    <div className="grid-list" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '1rem' }}>
+                        {depts.map(d => (
+                            <div key={d.id} className="card-sm" style={{ padding: '1rem', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', border: '1px solid var(--glass-border)' }}>
+                                <div style={{ fontWeight: 'bold' }}>{d.name}</div>
+                                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Posición: {d.display_order || 0}</div>
+                                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
+                                    <button className="btn-secondary" style={{ padding: '6px 12px' }} onClick={() => handleEditDept(d)}>Editar</button>
+                                    <button className="btn-danger-sm" style={{ padding: '6px 12px' }} onClick={() => handleDeleteDept(d.id)}>Eliminar</button>
                                 </div>
-                            ))
-                        )}
+                            </div>
+                        ))}
                     </div>
                 </div>
             )}
