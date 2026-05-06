@@ -7,6 +7,7 @@ const socket = io(BASE_API_URL);
 function AdminDashboard() {
     const [stats, setStats] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [activeTab, setActiveTab] = useState('depts');
 
     // CRUD State
@@ -50,6 +51,7 @@ function AdminDashboard() {
             setLoading(false);
         } catch (err) {
             console.error("Error fetching admin data", err);
+            setError(err.response?.data?.error || err.message || "Error de conexión con el servidor");
             setLoading(false);
         }
     };
@@ -295,7 +297,25 @@ function AdminDashboard() {
         }
     };
 
-    if (loading) return <div className="container">Cargando dashboard...</div>;
+    if (loading) return <div className="container" style={{ textAlign: 'center', marginTop: '4rem' }}>Cargando dashboard...</div>;
+
+    if (error) {
+        return (
+            <div className="container" style={{ marginTop: '4rem' }}>
+                <div className="card glass" style={{ border: '1px solid #ef4444', textAlign: 'center' }}>
+                    <h2 style={{ color: '#ef4444' }}>⚠️ Error de Conexión</h2>
+                    <p>{error}</p>
+                    <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+                        El servidor no responde o hay un problema con la base de datos. 
+                        Verifica que el backend esté en ejecución y la configuración de Postgres sea correcta.
+                    </p>
+                    <button className="btn-primary" onClick={() => { setError(null); setLoading(true); fetchData(); }} style={{ marginTop: '1rem' }}>
+                        Reintentar
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="container">

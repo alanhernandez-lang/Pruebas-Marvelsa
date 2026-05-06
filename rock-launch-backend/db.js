@@ -1,6 +1,7 @@
 const path = require('path');
 
 const DATABASE_URL = process.env.DATABASE_URL;
+const isVercel = process.env.VERCEL === '1' || !!process.env.VERCEL;
 const dbPath = path.resolve(__dirname, 'rocklaunch.db');
 
 const translateQuery = (sql) => {
@@ -63,12 +64,23 @@ const initPostgres = () => {
     const { Pool } = require('pg');
     const pool = new Pool({
         connectionString: DATABASE_URL,
-        ssl: process.env.PGSSLMODE === 'require' ? { rejectUnauthorized: false } : false
+        ssl: (process.env.PGSSLMODE === 'require' || (!DATABASE_URL.includes('sslmode=disable') && isVercel)) 
+             ? { rejectUnauthorized: false } 
+             : false,
+        connectionTimeoutMillis: 10000, // 10 seconds to connect
+        statement_timeout: 15000,      // 15 seconds per query
+        idleTimeoutMillis: 30000,
+        max: 10
     });
 
+    console.log(`[DB] Attempting to connect to Postgres... (SSL: ${process.env.PGSSLMODE})`);
+
     pool.query('SELECT 1')
-        .then(() => console.log('Connected to Postgres.'))
-        .catch((err) => console.error('Postgres connectivity check failed:', err.message));
+        .then(() => console.log('[DB] ✅ Connected to Postgres successfully.'))
+        .catch((err) => {
+            console.error('[DB] ❌ Postgres connectivity check failed:', err.message);
+            console.error('[DB] Connection details:', DATABASE_URL.replace(/:[^:@]+@/, ':****@')); // Hide password
+        });
 
     const pgWrapper = {
         get: (sql, params, cb) => {
