@@ -9,7 +9,7 @@ const Hero = ({ isVotingEnabled }) => {
       <div className="hero-content reveal active">
         <div className="hero-badge">ROCK LAUNCH</div>
         <h1 className="hero-title">
-          <span className="title-top">INGRESANDO A LA</span>
+          <span className="title-top">INGRESANDO A</span>
           <br />
           <span className="title-main">ROCKS 2025</span>
         </h1>

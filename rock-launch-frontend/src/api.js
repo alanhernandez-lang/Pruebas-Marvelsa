@@ -1,11 +1,11 @@
 import axios from 'axios';
 
-const BACKEND_URL = 'https://rock-launch-backend-opal.vercel.app';
+const BACKEND_URL = 'https://pruebas-marvelsa.vercel.app';
 const LOCAL_URL = 'http://localhost:3000';
 
-// Validate VITE_API_URL — reject it if it points to the frontend host or wrong project
+// Validate VITE_API_URL
 const envUrl = import.meta.env.VITE_API_URL;
-const isValidBackendUrl = envUrl && envUrl.includes('rock-launch-backend');
+const isValidBackendUrl = !!envUrl;
 
 export const BASE_API_URL = isValidBackendUrl
     ? envUrl
