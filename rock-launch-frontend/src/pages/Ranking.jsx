@@ -190,7 +190,7 @@ const Ranking = () => {
   return (
     <div className="container" style={{ paddingBottom: '4rem', maxWidth: '1400px' }}>
       <div style={{ display: 'flex', justifyContent: 'center', gap: '3rem', marginBottom: '5rem', alignItems: 'center' }}>
-        <h1 className="ultra-ranking-title">ROCK LAUNCH 2025</h1>
+        <h1 className="ultra-ranking-title">ROCKS 2025</h1>
         {!isSimulating ? (
           <button className="btn-racing-ultra" onClick={startSimulation}>Empezar Resultados 🚀</button>
         ) : (

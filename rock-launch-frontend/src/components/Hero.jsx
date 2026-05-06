@@ -11,11 +11,11 @@ const Hero = ({ isVotingEnabled }) => {
         <h1 className="hero-title">
           <span className="title-top">INGRESANDO A LA</span>
           <br />
-          <span className="title-main">NUEVA ERA</span>
+          <span className="title-main">ROCKS 2025</span>
         </h1>
         <p className="hero-subtitle">
-          Rock Launch 2025: Evaluando el impacto de los Rocks trabajados durante el año.
-          Únete a los líderes que están forjando el destino de la industria.
+          Evaluación de los Rocks estratégicos trabajados durante el 2025.
+          Únete para calificar el impacto y avance de nuestras metas clave.
         </p>
         <div className="hero-actions">
           <button
