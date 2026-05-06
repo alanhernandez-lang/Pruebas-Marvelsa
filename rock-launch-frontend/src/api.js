@@ -17,8 +17,7 @@ const api = axios.create({
 
 // Interceptor para añadir la API KEY de Admin en los requests si está disponible
 api.interceptors.request.use((config) => {
-    const fallbackKey = 'G6JnE+b4kCjuQReK2Ol141avlglX6qE+1m9plbz96V5zHjyK0zeVwrm13bAahfgd';
-    const adminKey = import.meta.env.VITE_ADMIN_API_KEY || localStorage.getItem('admin_api_key') || fallbackKey;
+    const adminKey = import.meta.env.VITE_ADMIN_API_KEY || localStorage.getItem('admin_api_key');
     if (adminKey) {
         config.headers['X-API-Key'] = adminKey;
     }

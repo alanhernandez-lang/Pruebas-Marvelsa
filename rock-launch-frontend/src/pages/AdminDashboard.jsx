@@ -1,11 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import axios, { BASE_API_URL } from '../api';
 import io from 'socket.io-client';
 
-const socket = io(BASE_API_URL);
-
 function AdminDashboard() {
-    const [stats, setStats] = useState([]);
+    const socketRef = useRef(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [activeTab, setActiveTab] = useState('depts');
@@ -44,22 +42,31 @@ function AdminDashboard() {
             setDepts(sortedDepts);
             setPresenters(presRes.data);
             setPeople(peopleRes.data);
-
-            const mediaRes = await axios.get('whatsapp/media-info');
-            setMetaMediaId(mediaRes.data.media_id);
-
             setLoading(false);
         } catch (err) {
             console.error("Error fetching admin data", err);
             setError(err.response?.data?.error || err.message || "Error de conexión con el servidor");
             setLoading(false);
+            return;
+        }
+
+        try {
+            const mediaRes = await axios.get('whatsapp/media-info');
+            setMetaMediaId(mediaRes.data.media_id);
+        } catch {
+            // Non-critical: WhatsApp media info unavailable
         }
     };
 
     useEffect(() => {
         fetchData();
+        const socket = io(BASE_API_URL, { transports: ['websocket', 'polling'] });
+        socketRef.current = socket;
         socket.on('vote_update', fetchData);
-        return () => socket.off('vote_update');
+        return () => {
+            socket.off('vote_update');
+            socket.disconnect();
+        };
     }, []);
 
     // Change URL based on template

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import axios, { BASE_API_URL } from '../api';
 
 const CountUp = ({ value, suffix = '', decimals = 2 }) => {
@@ -7,8 +7,9 @@ const CountUp = ({ value, suffix = '', decimals = 2 }) => {
 
   useEffect(() => {
     let startTimestamp = null;
+    let rafId = null;
     const startValue = displayValue;
-    const duration = 2000; // 2 seconds to count
+    const duration = 2000;
 
     const step = (timestamp) => {
       if (!startTimestamp) startTimestamp = timestamp;
@@ -17,10 +18,11 @@ const CountUp = ({ value, suffix = '', decimals = 2 }) => {
       const current = startValue + (targetValue - startValue) * easedProgress;
       setDisplayValue(current);
       if (progress < 1) {
-        window.requestAnimationFrame(step);
+        rafId = window.requestAnimationFrame(step);
       }
     };
-    window.requestAnimationFrame(step);
+    rafId = window.requestAnimationFrame(step);
+    return () => { if (rafId) window.cancelAnimationFrame(rafId); };
   }, [targetValue]);
 
   return <span>{displayValue.toFixed(decimals)}{suffix}</span>;
