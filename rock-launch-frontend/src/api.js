@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BACKEND_URL = 'https://rock-launch-backend.vercel.app';
+const BACKEND_URL = 'https://rock-launch-backend-opal.vercel.app';
 const LOCAL_URL = 'http://localhost:3000';
 
 // Validate VITE_API_URL — reject it if it points to the frontend host or wrong project
