@@ -206,10 +206,10 @@ function VotingFlow() {
             <div className="dashboard-grid">
                 <div className="card fade-in">
                     <h3 style={{ marginBottom: '1rem', paddingBottom: '0.5rem', borderBottom: '1px solid var(--glass-border)' }}>Proyecto</h3>
-                    <StarRating label="Actitud" description={CRITERIA_DESCRIPTIONS.attitude} value={criteria.attitude} onChange={(v) => handleCriteriaChange('attitude', v)} />
+                    <StarRating label="Impacto" description={CRITERIA_DESCRIPTIONS.impact} value={criteria.impact} onChange={(v) => handleCriteriaChange('impact', v)} />
                     <StarRating label="Creatividad" description={CRITERIA_DESCRIPTIONS.creativity} value={criteria.creativity} onChange={(v) => handleCriteriaChange('creativity', v)} />
                     <StarRating label="Claridad" description={CRITERIA_DESCRIPTIONS.clarity} value={criteria.clarity} onChange={(v) => handleCriteriaChange('clarity', v)} />
-                    <StarRating label="Impacto" description={CRITERIA_DESCRIPTIONS.impact} value={criteria.impact} onChange={(v) => handleCriteriaChange('impact', v)} />
+                    <StarRating label="Actitud" description={CRITERIA_DESCRIPTIONS.attitude} value={criteria.attitude} onChange={(v) => handleCriteriaChange('attitude', v)} />
                 </div>
 
                 <div className="card fade-in">
@@ -301,7 +301,7 @@ function VotingFlow() {
                             {/* Per-criterion comparison (Jurado vs Público) */}
                             <div>
                                 <h4 style={{ margin: '6px 0' }}>Detalles por criterio</h4>
-                                {['attitude', 'creativity', 'clarity', 'impact'].map((key) => {
+                                {['impact', 'creativity', 'clarity', 'attitude'].map((key) => {
                                     const label = key.charAt(0).toUpperCase() + key.slice(1);
                                     const juryAvg = deptStats.jury_stats?.details?.avgPerCriterion?.[key] ?? 0;
                                     const pubAvg = deptStats.public_stats?.details?.avgPerCriterion?.[key] ?? 0;
