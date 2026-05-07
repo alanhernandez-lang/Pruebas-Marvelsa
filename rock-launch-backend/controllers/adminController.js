@@ -125,15 +125,38 @@ exports.addPerson = (req, res) => {
         return res.status(400).json({ error: 'El teléfono debe tener entre 10 y 15 números.' });
     }
 
+    // Cross-table validation: check if phone already exists in the OTHER table
+    const otherTable = isJury ? 'registro_personas' : 'jurados';
+    const otherLabel = isJury ? 'público' : 'jurado';
     const targetTable = isJury ? 'jurados' : 'registro_personas';
-    const percentage = isJury ? 70 : 30;
-    const token = generateShortToken(); // Short unique token
 
-    db.run(`INSERT INTO ${targetTable} (name, phone, porcentaje, token) VALUES (?, ?, ?, ?)`,
-        [name, phone, percentage, token], function (err) {
-            if (err) return handleSQLError(res, err);
-            res.json({ id: this.lastID, name, phone, type: isJury ? 'JURY' : 'PUBLIC', porcentaje: percentage, token });
+    db.get(`SELECT id, name FROM ${otherTable} WHERE phone = ?`, [phone], (checkErr, existing) => {
+        if (checkErr) return handleSQLError(res, checkErr);
+        if (existing) {
+            return res.status(409).json({
+                error: `Este teléfono ya está registrado como ${otherLabel} (${existing.name}). Un número solo puede ser jurado O público, no ambos.`
+            });
+        }
+
+        // Also check same table to give a friendlier error
+        db.get(`SELECT id, name FROM ${targetTable} WHERE phone = ?`, [phone], (sameErr, sameExisting) => {
+            if (sameErr) return handleSQLError(res, sameErr);
+            if (sameExisting) {
+                return res.status(409).json({
+                    error: `Este teléfono ya está registrado como ${isJury ? 'jurado' : 'público'} (${sameExisting.name}).`
+                });
+            }
+
+            const percentage = isJury ? 70 : 30;
+            const token = generateShortToken();
+
+            db.run(`INSERT INTO ${targetTable} (name, phone, porcentaje, token) VALUES (?, ?, ?, ?)`,
+                [name, phone, percentage, token], function (err) {
+                    if (err) return handleSQLError(res, err);
+                    res.json({ id: this.lastID, name, phone, type: isJury ? 'JURY' : 'PUBLIC', porcentaje: percentage, token });
+                });
         });
+    });
 };
 
 exports.deletePerson = (req, res) => {
@@ -165,27 +188,46 @@ exports.updatePerson = (req, res) => {
     const newTable = isJury ? 'jurados' : 'registro_personas';
     const percentage = isJury ? 70 : 30;
 
-    if (oldTable === newTable) {
-        db.run(`UPDATE ${oldTable} SET name = ?, phone = ?, porcentaje = ? WHERE id = ?`,
-            [name, phone, percentage, id], function (err) {
-                if (err) return handleSQLError(res, err);
-                // Also ensure person has a token if they don't
-                db.run(`UPDATE ${oldTable} SET token = ? WHERE id = ? AND (token IS NULL OR token = "")`,
-                    [generateShortToken(), id]);
-                res.json({ message: 'Person updated' });
-            });
-    } else {
-        // Role change: Move between tables
-        const newToken = generateShortToken();
-        db.serialize(() => {
-            db.run(`DELETE FROM ${oldTable} WHERE id = ?`, [id]);
-            db.run(`INSERT INTO ${newTable} (name, phone, porcentaje, token) VALUES (?, ?, ?, ?)`,
-                [name, phone, percentage, newToken], function (err) {
-                    if (err) return handleSQLError(res, err);
-                    res.json({ message: 'Person updated and role changed' });
+    // Cross-table validation: if phone is changing or role is changing, check the other table
+    const otherTable = isJury ? 'registro_personas' : 'jurados';
+    const otherLabel = isJury ? 'público' : 'jurado';
+
+    // Check if phone already exists in the destination table (excluding current record if same table)
+    const checkOtherTable = (callback) => {
+        db.get(`SELECT id, name FROM ${otherTable} WHERE phone = ?`, [phone], (err, existing) => {
+            if (err) return handleSQLError(res, err);
+            if (existing) {
+                return res.status(409).json({
+                    error: `Este teléfono ya está registrado como ${otherLabel} (${existing.name}). Un número solo puede ser jurado O público, no ambos.`
                 });
+            }
+            callback();
         });
-    }
+    };
+
+    checkOtherTable(() => {
+        if (oldTable === newTable) {
+            db.run(`UPDATE ${oldTable} SET name = ?, phone = ?, porcentaje = ? WHERE id = ?`,
+                [name, phone, percentage, id], function (err) {
+                    if (err) return handleSQLError(res, err);
+                    // Also ensure person has a token if they don't
+                    db.run(`UPDATE ${oldTable} SET token = ? WHERE id = ? AND (token IS NULL OR token = "")`,
+                        [generateShortToken(), id]);
+                    res.json({ message: 'Person updated' });
+                });
+        } else {
+            // Role change: Move between tables
+            const newToken = generateShortToken();
+            db.serialize(() => {
+                db.run(`DELETE FROM ${oldTable} WHERE id = ?`, [id]);
+                db.run(`INSERT INTO ${newTable} (name, phone, porcentaje, token) VALUES (?, ?, ?, ?)`,
+                    [name, phone, percentage, newToken], function (err) {
+                        if (err) return handleSQLError(res, err);
+                        res.json({ message: 'Person updated and role changed' });
+                    });
+            });
+        }
+    });
 };
 
 // Version Debug 2.0 - Detección inteligente de cabeceras
@@ -267,21 +309,34 @@ exports.importPeople = async (req, res) => {
                 const weight = isJury ? 70 : 30;
                 const token = generateShortToken();
 
-                await new Promise((resolve) => {
-                    db.run(targetSql, [name, phone, weight, token], function (err) {
-                        if (err) {
-                            console.log(`❌ ERROR BD para ${name}:`, err.message);
-                            skippedCount++;
-                        } else if (this && this.changes > 0) {
-                            console.log(`✅ INSERTADO: ${name} (${phone})`);
-                            insertedCount++;
-                        } else {
-                            console.log(`⚠️ OMITIDO: ${name} (${phone})`);
-                            skippedCount++;
-                        }
-                        resolve();
+                // Cross-table validation: check if phone exists in the OTHER table
+                const crossTable = isJury ? 'registro_personas' : 'jurados';
+                const existsInOther = await new Promise((resolve) => {
+                    db.get(`SELECT id FROM ${crossTable} WHERE phone = ?`, [phone], (err, row) => {
+                        resolve(!!row);
                     });
                 });
+
+                if (existsInOther) {
+                    console.log(`⚠️ OMITIDO (duplicado cruzado): ${name} (${phone}) - ya existe en la otra tabla`);
+                    skippedCount++;
+                } else {
+                    await new Promise((resolve) => {
+                        db.run(targetSql, [name, phone, weight, token], function (err) {
+                            if (err) {
+                                console.log(`❌ ERROR BD para ${name}:`, err.message);
+                                skippedCount++;
+                            } else if (this && this.changes > 0) {
+                                console.log(`✅ INSERTADO: ${name} (${phone})`);
+                                insertedCount++;
+                            } else {
+                                console.log(`⚠️ OMITIDO: ${name} (${phone})`);
+                                skippedCount++;
+                            }
+                            resolve();
+                        });
+                    });
+                }
             } else if (name || phone) {
                 // Solo loguear si al menos tiene un dato pero está incompleto
                 console.log('⚠️ Fila incompleta:', { name: name || 'VACÍO', phone: phone || 'VACÍO' });
