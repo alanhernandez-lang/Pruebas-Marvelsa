@@ -295,6 +295,15 @@ select option {
   background-clip: text;
   -webkit-text-fill-color: transparent;
   letter-spacing: -1px;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+@media (max-width: 640px) {
+  .title {
+    font-size: 2rem;
+    letter-spacing: normal;
+  }
 }
 
 .subtitle {
