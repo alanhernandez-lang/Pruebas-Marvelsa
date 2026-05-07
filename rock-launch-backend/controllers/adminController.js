@@ -405,10 +405,22 @@ exports.getStats = (req, res) => {
                 db.all(`SELECT * FROM resultados_votaciones`, [], (err, rows) => {
                     if (err) return res.status(500).json({ error: err.message });
 
+                    // Only count votes from users who have voted for ALL departments
+                    const userVoteCounts = {};
+                    rows.forEach(r => {
+                        const key = `${r.user_type}_${r.user_id}`;
+                        userVoteCounts[key] = (userVoteCounts[key] || 0) + 1;
+                    });
+
+                    const validRows = rows.filter(r => {
+                        const key = `${r.user_type}_${r.user_id}`;
+                        return userVoteCounts[key] >= depts.length;
+                    });
+
                     const deptStats = {};
                     const presenterStats = {};
 
-                    rows.forEach((row) => {
+                    validRows.forEach((row) => {
                         const deptId = Number(row.department_id);
                         const type = row.user_type;
                         const scores = typeof row.criteria_scores === 'string' ? JSON.parse(row.criteria_scores) : row.criteria_scores;
