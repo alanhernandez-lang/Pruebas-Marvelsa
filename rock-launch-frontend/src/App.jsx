@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import Registration from './pages/Registration';
 import TokenLogin from './pages/TokenLogin';
 import VotingFlow from './pages/VotingFlow';
@@ -58,6 +59,7 @@ function App() {
           </Routes>
         </div>
       </Router>
+      <SpeedInsights />
     </UserContext.Provider>
   );
 }
