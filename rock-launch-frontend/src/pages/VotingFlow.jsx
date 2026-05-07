@@ -12,7 +12,7 @@ function VotingFlow() {
     const COOLDOWN_SEC = 0; // 0 segundos (desactivado)
 
     useEffect(() => {
-        const TARGET_DATE = new Date("May 13, 2026 13:30:00");
+        const TARGET_DATE = new Date("Jan 1, 2024 00:00:00");
         if (new Date() < TARGET_DATE) {
             navigate('/');
         }
