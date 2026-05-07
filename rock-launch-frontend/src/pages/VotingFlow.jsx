@@ -9,7 +9,7 @@ function VotingFlow() {
     const { user, login } = useContext(UserContext);
     const navigate = useNavigate();
 
-    const COOLDOWN_SEC = 60; // 1 minuto
+    const COOLDOWN_SEC = 0; // 0 segundos (desactivado)
 
     useEffect(() => {
         const TARGET_DATE = new Date("May 13, 2026 13:30:00");
