@@ -220,7 +220,7 @@ const Ranking = () => {
 
         {/* PRESENTERS RACING CHART */}
         <div className="racing-side">
-          <h2 className="side-title" style={{ color: '#0ea5e9', textShadow: '0 0 20px rgba(14, 165, 233, 0.4)' }}>Ranking Representantes</h2>
+          <h2 className="side-title" style={{ color: '#0ea5e9', textShadow: '0 0 20px rgba(14, 165, 233, 0.4)' }}>El Rockstar de la tarde</h2>
           <div className="side-canvas" style={{ height: `${Math.min(presenterRanking.length, 10) * 64}px` }}>
             {presenterRanking.slice(0, 10).map((pres, index) => (
               <div key={pres.id} className="item-row" style={{ transform: `translateY(${index * 64}px)` }}>
@@ -238,7 +238,7 @@ const Ranking = () => {
                     )}
                   </div>
                   <div className="item-score-text">
-                    <CountUp value={pres.combinedScore} decimals={1} />
+                    <CountUp value={pres.combinedScore} decimals={2} />
                   </div>
                 </div>
               </div>
