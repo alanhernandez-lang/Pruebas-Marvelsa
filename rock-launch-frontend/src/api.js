@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BACKEND_URL = 'https://pruebas-marvelsa.vercel.app';
+const BACKEND_URL = 'https://rocklaunch.coolify.marvelsa.com';
 const LOCAL_URL = 'http://localhost:3000';
 
 // Validate VITE_API_URL
