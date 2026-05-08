@@ -233,7 +233,7 @@ const Ranking = () => {
                     <div className="item-bar-fill blue-glow" style={{ width: `${parseFloat(pres.combinedScore) * 10}%` }}>
                     {pres.photo_url && (
                       <div className="item-avatar-ring presenter-photo-container" onClick={() => setZoomedPhoto({ ...pres, photo: pres.photo_url })}>
-                        <img src={pres.photo_url.startsWith('data:') ? pres.photo_url : `${BASE_API_URL}${pres.photo_url}`} alt="" />
+                        <img src={pres.photo_url.trim().startsWith('data:') ? pres.photo_url.trim() : `${BASE_API_URL}${pres.photo_url.trim()}`} alt="" />
                       </div>
                     )}
                   </div>
@@ -431,7 +431,7 @@ const Ranking = () => {
       {zoomedPhoto && (
           <div className="image-zoom-overlay" onClick={() => setZoomedPhoto(null)}>
             <div className="image-zoom-content">
-              <img src={zoomedPhoto.photo.startsWith('data:') ? zoomedPhoto.photo : `${BASE_API_URL}${zoomedPhoto.photo}`} alt={zoomedPhoto.name} />
+              <img src={zoomedPhoto.photo.trim().startsWith('data:') ? zoomedPhoto.photo.trim() : `${BASE_API_URL}${zoomedPhoto.photo.trim()}`} alt={zoomedPhoto.name} />
               <div style={{ marginTop: '1rem', textAlign: 'center' }}>
               <h2 style={{ margin: 0 }}>{zoomedPhoto.name}</h2>
               <p style={{ color: '#0ea5e9', margin: '5px 0 0' }}>Representante</p>

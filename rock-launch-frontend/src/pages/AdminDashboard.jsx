@@ -369,7 +369,7 @@ function AdminDashboard() {
                                 {/* Square photo */}
                                 {p.photo_url
                                     ? <img
-                                        src={p.photo_url.startsWith('data:') ? p.photo_url : `${BASE_API_URL}${p.photo_url}`}
+                                        src={p.photo_url.trim().startsWith('data:') ? p.photo_url.trim() : `${BASE_API_URL}${p.photo_url.trim()}`}
                                         alt={p.name}
                                         style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '8px', flexShrink: 0 }}
                                     />
